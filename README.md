@@ -32,6 +32,8 @@ Database → Service → Deliverer → Client → ATS
 
 Mutations are triggered via internal API endpoints, which update the database and propagate changes back to the ATS.
 
+Inbound handles external data ingestion, while outbound ensures internal changes are propagated back to the ATS.
+
 Additional components are introduced progressively:
 
 * Webhooks for event-driven updates
@@ -119,6 +121,10 @@ Ensures periodic reconciliation between systems.
 * Incremental sync using `updated_since` timestamps
 * Supports pagination and checkpoint-based continuation
 
+**Conflict Resolution**
+
+* Conflicts are resolved using last-updated timestamps, with user-controlled fields taking precedence.
+
 ---
 
 ## Production Considerations
@@ -131,6 +137,9 @@ The following concerns are incorporated progressively:
 * Idempotency handling for duplicate events
 * Rate limiting for external API interactions
 * Correlation tracking across webhook → queue → worker → outbound
+* Dead-letter queue (DLQ) for jobs that fail after maximum retry attempts, allowing inspection and replay
+* Webhook signature verification to ensure authenticity of incoming events
+* Target reliability: most updates are processed within a short time window (e.g., 99.9% within 5 minutes)
 
 ---
 
