@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
+require("./config/db");
 const candidatesRoutes = require("./routes/candidateRoutes");
 
 app.use(express.json());
