@@ -8,7 +8,7 @@ const updates = req.body;
 const result =  await updateCandidate(id, updates);
 
 if(result.changes === 0){
-  return res.sattus(404).json({message: "Candidate not found"});
+  return res.status(404).json({message: "Candidate not found"});
 }
 
 return res.json({message: "Candidates updated successfully"})
