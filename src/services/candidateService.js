@@ -13,4 +13,21 @@ function saveCandidate(candidate) {
   ]);
 }
 
-module.exports = {saveCandidate};
+function runQuery(query, params = []){
+  return new Promise((resolve, reject) => {
+    db.all(query, params, (err, rows) => {
+      if (err) return reject(err);
+      resolve(rows);
+    })
+  })
+}
+
+async function getAllCandidates() {
+  const rows = await runQuery("SELECT * FROM candidates");
+  return rows;
+}
+
+module.exports = {
+  saveCandidate,
+  getAllCandidates,
+};
