@@ -1,0 +1,25 @@
+const{updateCandidate} = require("../../services/candidateService");
+
+async function updateCandidateHandler(req, res){
+try {
+const {id} = req.params;
+const updates = req.body;
+
+const result =  await updateCandidate(id, updates);
+
+if(result.changes === 0){
+  return res.sattus(404).json({message: "Candidate not found"});
+}
+
+return res.json({message: "Candidates updated successfully"})
+} catch(error) {
+   if (error.message === "No fields to update") {
+    return res.status(400).json({message: error.message});
+   }
+
+   return res.status(500).json({message: "Failed to update candidate"})
+
+}
+}
+
+module.exports = {updateCandidateHandler};
