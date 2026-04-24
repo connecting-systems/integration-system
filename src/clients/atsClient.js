@@ -21,7 +21,7 @@ async function getFromATS() {
 // Outbound (system → ATS)
 async function updateToATS(candidate) {
   try {
-    const response = await axios.put(`${BASE_URL}/api/v1/candidates/${candidate.id}`, candidate, {
+    const response = await axios.patch(`${BASE_URL}/api/v1/candidates/${candidate.id}`, candidate, {
       headers :{
         Authorization: `Api-Key ${API_KEY}`,
       },
@@ -29,7 +29,7 @@ async function updateToATS(candidate) {
 
     return response.data;
   } catch (error) {
-    console.error("Error updateing candidate in ATS", error.message);
+    console.error("Error updating candidate in ATS", error.message);
     throw error;
   }
 }
