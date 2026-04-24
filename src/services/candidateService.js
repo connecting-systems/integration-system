@@ -43,6 +43,10 @@ async function updateCandidateAndSync(id, updates){
   // Send to ATS
   await updateToATS(atsPayload);
 
+  await runCommand(
+  "UPDATE candidates SET isDirty = 0 WHERE id = ?", [id]
+);
+
   return {changes: 1};
 }
 
@@ -65,6 +69,8 @@ async function getAllCandidates() {
 }
 
 async function updateCandidate(id, updates) {
+  updates.isDirty = 1;
+
   const fields = [];
   const values = [];
 
@@ -94,4 +100,5 @@ module.exports = {
   getAllCandidates,
   updateCandidate,
   updateCandidateAndSync,
+  runQuery, 
 };
