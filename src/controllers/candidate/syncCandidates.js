@@ -8,7 +8,9 @@ try {
   const mappedData = mapCandidates(atsData);
 
   // Save each Candidate
-  mappedData.forEach(saveCandidate)
+  for (const candidate of mappedData) {
+  await saveCandidate(candidate);
+}
 
   return res.json(mappedData);
   } catch (error) {
