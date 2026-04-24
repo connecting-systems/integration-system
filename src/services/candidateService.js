@@ -1,4 +1,6 @@
 const db = require("../config/db");
+const { mapCandidate: mapOutbound } = require("../mappers/outbound/candidateMapper");
+const { updateToATS } = require("../clients/atsClient");
 
 function runQuery(query, params = []){
   return new Promise((resolve, reject) => {
@@ -16,6 +18,32 @@ function runCommand(query, params = []){
       resolve(this);
     })
   })
+}
+
+async function updateCandidateAndSync(id, updates){
+  // Update DB
+  const result = await updateCandidate(id, updates);
+
+  if(result.changes === 0) {
+    return {changes: 0};
+  }
+
+  // fetch updated candidate
+  const rows = await runQuery("SELECT * FROM CANDIDATES WHERE id = ?", [id]);
+
+  const candidate = rows[0];
+
+  if (!candidate) {
+  throw new Error("Candidate not found after update");
+}
+
+  // Map tp ATS format
+  const atsPayload = mapOutbound(candidate);
+
+  // Send to ATS
+  await updateToATS(atsPayload);
+
+  return {changes: 1};
 }
 
 async function saveCandidate(candidate) {
@@ -64,5 +92,6 @@ async function updateCandidate(id, updates) {
 module.exports = {
   saveCandidate,
   getAllCandidates,
-  updateCandidate
+  updateCandidate,
+  updateCandidateAndSync,
 };
