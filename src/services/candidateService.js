@@ -1,7 +1,7 @@
 const db = require("../config/db");
 
 function saveCandidate(candidate) {
-  const query = `INSERT OR REPPLACE INTO candidates (id, name, email, phone, source, createdAt) Values (?, ?, ?, ?, ?, ?)`;
+  const query = `INSERT OR REPLACE INTO candidates (id, name, email, phone, source, createdAt) Values (?, ?, ?, ?, ?, ?)`;
 
   db.run(query, [
     candidate.id,
