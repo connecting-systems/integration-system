@@ -1,5 +1,5 @@
 const {getFromATS} = require("../../clients/atsClient");
-const {mapCandidates} = require("../../mappers/candidateMapper");
+const {mapCandidates} = require("../../mappers/inbound/candidateMapper");
 const {saveCandidate} = require("../../services/candidateService");
 
 async function syncCandidates(req, res) {
