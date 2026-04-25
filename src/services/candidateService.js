@@ -20,6 +20,35 @@ function runCommand(query, params = []){
   })
 }
 
+async function retryDirtyCandidates() {
+  const dirtyCandidates = await runQuery(
+    "SELECT * FROM candidates WHERE isDirty = 1"
+  );
+
+  let successCount = 0;
+
+  for( const candidate of dirtyCandidates) {
+    const atsPayload = mapOutbound(candidate)
+
+    try {
+      await updateToATS(atsPayload);
+
+      await runCommand(
+        "UPDATE candidates SET isDirty = 0 WHERE id = ?", [candidate.id]
+      );
+
+      successCount++;
+    } catch (error) {
+      console.error("Retry failed for: ", candidate.id);
+    }
+  }
+
+  return {
+    total: dirtyCandidates.length,
+    synced: successCount,
+  };
+}
+
 async function updateCandidateAndSync(id, updates){
   // Update DB
   const result = await updateCandidate(id, updates);
@@ -40,10 +69,22 @@ async function updateCandidateAndSync(id, updates){
   // Map tp ATS format
   const atsPayload = mapOutbound(candidate);
 
-  // Send to ATS
+  let synced = false;
+try {
   await updateToATS(atsPayload);
 
-  return {changes: 1};
+  await runCommand(
+    "UPDATE candidates SET isDirty = 0 WHERE id = ?",
+    [id]
+  );
+
+  synced = true;
+
+} catch (error) {
+  console.error("ATS sync failed:", error.response?.data || error.message);
+}
+
+  return {changes: 1, synced};
 }
 
 async function saveCandidate(candidate) {
@@ -65,6 +106,8 @@ async function getAllCandidates() {
 }
 
 async function updateCandidate(id, updates) {
+  updates.isDirty = 1;
+
   const fields = [];
   const values = [];
 
@@ -94,4 +137,6 @@ module.exports = {
   getAllCandidates,
   updateCandidate,
   updateCandidateAndSync,
+  runQuery, 
+  retryDirtyCandidates,
 };
