@@ -1,4 +1,4 @@
-const{updateCandidateAndSync} = require("../../services/candidateService");
+const{updateCandidateAndSync, retryDirtyCandidates} = require("../../services/candidateService");
 
 async function updateCandidateHandler(req, res){
 try {
@@ -11,15 +11,38 @@ if(result.changes === 0){
   return res.status(404).json({message: "Candidate not found"});
 }
 
-return res.json({message: "Candidates updated and synced with ATS"})
+if (result.synced) {
+  return res.json({
+    message: "Candidate updated and synced with ATS"
+  });
+} else {
+  return res.json({
+    message: "Candidate updated but NOT synced with ATS",
+    isDirty: true
+  });
+}
 } catch(error) {
    if (error.message === "No fields to update") {
     return res.status(400).json({message: error.message});
    }
 
-   return res.status(500).json({message: "Failed to update candidate"})
+   console.error("FULL ERROR:", error); 
+   return res.status(500).json({message: error.message || "Failed to update candidate"})
 
 }
 }
 
-module.exports = {updateCandidateHandler};
+async function retrySyncHandler(req, res) {
+  try {
+   const result = await retryDirtyCandidates();
+   
+   return res.json({message: "Retry completed",  ...result})
+  } catch (error) {
+    return res.status(500).json({message: error.message || "Retry failed"})
+  }
+}
+
+module.exports = {
+  updateCandidateHandler,
+  retrySyncHandler,
+};
